@@ -8,29 +8,46 @@ st.set_page_config(page_title="Chef Rendang AI", page_icon="🍛")
 st.title("🍛 Konsultasi Resep Rendang AI")
 st.write("Tanyakan apa saja soal rendang, Chef AI siap menjawab!")
 
+# Pilih versi model
+model_version = st.radio(
+    "Pilih versi model",
+    options=[
+        "Model 1.0",
+        "Model 2.0",
+    ],
+    index=0,
+    horizontal=True,
+)
+
+ADAPTER_PATH = (
+    "./gpt2-rendang-final"
+    if "1.0" in model_version
+    else "./gpt2-rendang-final-850"
+)
+
 # --- LOAD MODEL (Hanya sekali biar tidak berat) ---
 # Fungsi ini dikasih @st.cache_resource supaya model gak di-load ulang tiap kita ngetik
 @st.cache_resource
-def load_model():
+def load_model(adapter_path: str):
     BASE_MODEL_NAME = "flax-community/gpt2-small-indonesian"
-    ADAPTER_PATH = "./gpt2-rendang-final-850" # Pastikan folder ini ikut di-upload nanti
 
     # Cek device (CPU/GPU)
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    
+
     tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL_NAME)
     tokenizer.pad_token = tokenizer.eos_token
-    
+
     base_model = AutoModelForCausalLM.from_pretrained(BASE_MODEL_NAME)
-    model = PeftModel.from_pretrained(base_model, ADAPTER_PATH)
+    model = PeftModel.from_pretrained(base_model, adapter_path)
     model.to(device)
     model.eval()
-    
+
     return model, tokenizer, device
 
 # Loading indicator
-with st.spinner("Sedang memanggil Chef dari dapur..."):
-    model, tokenizer, device = load_model()
+with st.spinner(f"Sedang memanggil Chef versi {model_version} dari dapur..."):
+    model, tokenizer, device = load_model(ADAPTER_PATH)
+st.caption(f"Model aktif: {model_version}")
 
 # --- INTERFACE CHAT ---
 # Simpan riwayat chat di session state
