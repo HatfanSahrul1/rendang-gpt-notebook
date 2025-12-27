@@ -7,6 +7,7 @@ from peft import PeftModel
 st.set_page_config(page_title="Chef Rendang AI", page_icon="🍛")
 st.title("🍛 Konsultasi Resep Rendang AI")
 st.write("Tanyakan apa saja soal rendang, Chef AI siap menjawab!")
+st.write("**Diclamer:** Model ini mungkin menghasilkan jawaban yang kurang akurat. Gunakan dengan bijak!")
 
 # Pilih versi model
 model_version = st.radio(
@@ -83,7 +84,7 @@ if prompt := st.chat_input("Tanya resep rendang..."):
                 temperature=0.4,
                 top_k=50,
                 top_p=0.95,
-                repetition_penalty=1.2,
+                repetition_penalty=1.5,
                 pad_token_id=tokenizer.eos_token_id
             )
         
